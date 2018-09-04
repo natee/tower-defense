@@ -1,9 +1,11 @@
-import { log, extend, debounce, randomColor } from './utils/utils';
+import { log, extend, debounce, randomColor, pointInRect } from './utils/utils';
 import { CANVAS_OFFSET, PANEL_WIDTH } from './utils/constant';
 import Grid from './grid';
 import Tile from './tile';
 import Building from './building';
 import Popup from './popup';
+import Button from './button';
+import Event from './event';
 
 
 // default config
@@ -18,7 +20,13 @@ let defaultConfig = {
 class TowerDefense {
   constructor(canvasId, config) {
     this.popup = new Popup(this)
+
     this.canvasId = canvasId
+    this._events = {
+      click: [],
+      hover: [],
+      out: [],
+    }
 
     // TODO 有bug defaultConfig被修改了，所以这个defaultConfig应不应该写成局部变量
     this.config = extend(defaultConfig, config)
@@ -28,16 +36,21 @@ class TowerDefense {
     this.currentTile = null
     this.lastTile = null // 上一次触摸的格子
     this.setup()
+
   }
 
   step(){
+    // 注：需要渲染的内容需写在这里
     const FPS = 60
 
-    this.drawCanvas()
+    // this.drawCanvas()
     this.drawGrid()
-    this.renderBuilds()
+    this.renderGrids()
 
     this.popup.render()
+
+    this.drawAvailableBuilds()
+    // this.drawButton()
 
     this._st = setTimeout( () => {
       this.step()
@@ -49,56 +62,117 @@ class TowerDefense {
 
     this.grid = new Grid(this.config.grid, this.gridSize)
 
-    this.buildCfg()
-    this.initBuilds()
+    this.drawCanvas()
+  
+    this.setStartBuilds()
     this.bindEvents()
+
+    this.drawButton()
 
     this.step()
   }
 
   // 可选建筑物
-  buildCfg(){
+  drawAvailableBuilds(){
     const buildMap = new Building(this.ctx, 30)
   }
 
-  bindEvents(){
-    this.canvas.onmousemove = debounce(e => {
-      const x = e.offsetX
-      const y = e.offsetY
+  drawButton(){
+    const self = this
 
-      this.currentTile = this.grid.findTile(x, y)
+    const config = this.config
+    const row = config.grid.row
+    const col = config.grid.col
+    const size = config.gridSize
+    const ctx = this.ctx
 
-      if(this.currentTile){
-        log(this.currentTile)
+    var startBtn = new Button(this, {
+      text: '开始',
+      x: col * size + 15,
+      y: 0,
+      _onClick: function(){
+        log('click start button')
+      }
+    })
 
-        setTimeout( () => {
-          this.currentTile.onEnter(this.popup)
-        })
+    var stopBtn = new Button(this, {
+      text: '暂停',
+      x: col * size + 15,
+      y: 40,
+      _onClick: function(){
+        log('click stop button')
+      }
+    })
+  }
 
-        if(this.lastTile){
-          const isSameTile = this.lastTile.row === this.currentTile.row 
-                            && this.lastTile.col === this.currentTile.col
-          
-          // 鼠标移出上一个格子
-          if(!isSameTile){
-            this.lastTile.onOut(this.popup)
-          }else{
-            return
-          }
+  click(x, y){
+
+    this._events.click.forEach( (obj) => {
+      const elem = obj.elem
+      if(pointInRect({ex: x, ey: y}, {x: elem.x, y: elem.y, x2: elem.x2, y2: elem.y2})){
+        obj.fn.call(elem)
+      }
+    })
+  }
+
+  hover(x, y){
+    this._events.hover.forEach( (obj) => {
+      const elem = obj.elem
+      if(pointInRect({ex: x, ey: y}, {x: elem.x, y: elem.y, x2: elem.x2, y2: elem.y2})){
+        obj.fn.call(elem)
+      }else{
+        // excute out event
+        obj.fn.call(elem, 'out')
+      }
+    })
+
+    // TODO canvas这么大，怎么可能只找格子，还要做按钮、建筑物的事件判断
+    this.currentTile = this.grid.findTile(x, y)
+
+    if(this.currentTile){
+
+      this.currentTile.onEnter(this.popup)
+
+      if(this.lastTile){
+        const isSameTile = this.lastTile.row === this.currentTile.row
+                          && this.lastTile.col === this.currentTile.col
+        
+        // 鼠标移出上一个格子
+        if(!isSameTile){
+          this.lastTile.onOut(this.popup)
+        }else{
+          return
         }
-
-        this.render(this.currentTile)
-        this.lastTile = this.currentTile
-      }else if(this.lastTile){
-        this.lastTile.onOut(this.popup)
       }
 
-      this.lastTile && this.render(this.lastTile)
+      // log(this.currentTile)
+
+      this.lastTile = this.currentTile
+    }
+    else if(this.lastTile){
+      // 移除格子范围外，隐藏高亮状态
+      this.lastTile.onOut(this.popup)
+    }
+  }
+
+  getEventXY(e){
+    return [e.offsetX, e.offsetY]
+  }
+
+  bindEvents(){
+    this.canvas.onmousemove = debounce( e => {
+      const xy = this.getEventXY(e)
+      this.hover(xy[0], xy[1])
     }, 10)
+
+    this.canvas.onclick = e => {
+      const xy = this.getEventXY(e)
+      this.click(xy[0], xy[1])
+    }
   }
 
   // 放置初始建筑
-  initBuilds() {
+  setStartBuilds() {
 
     // new Building({row: 0, col: 0,}, 1, this.gridSize)
     // new Building({row: this.grid.row - 1, col: this.grid.col - 1,}, 2, this.gridSize)
@@ -108,7 +182,7 @@ class TowerDefense {
     // TODO 添加更多建筑
   }
 
-  renderBuilds() {
+  renderGrids() {
     
     this.grid.eachCell( (i, j, tile) => {
       this.render(tile)
@@ -169,6 +243,8 @@ class TowerDefense {
     const size = config.gridSize
     const ctx = this.ctx
     ctx.lineWidth = 0.5
+
+    this.ctx.clearRect(0, 0, col * size, row * size)
 
     for (let i = 0; i <= row; i++) {
       const y = size * i

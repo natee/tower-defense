@@ -12,7 +12,9 @@ class Popup {
     this.x = el.cx + 0.5
     this.y = el.cy + 0.5
 
-    if (this.x + this.width > this.game.canvas.width) {
+    // 让文字显示在网格内
+    const rightX = this.game.grid.cells[0][this.game.config.grid.col - 1].x2 // 最右侧单元格右边x
+    if (this.x + this.width > rightX) {
       this.x = this.x - this.width
     }
 

@@ -53,6 +53,7 @@ class Tile {
     this.out()
     popup.hide()
   }
+
 }
 
 export default Tile

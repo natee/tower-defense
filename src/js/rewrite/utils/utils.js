@@ -69,3 +69,30 @@ export function randomColor(opacity) {
 
   return `rgba(${r}, ${g}, ${b}, ${o})`
 }
+
+/**
+ * 生成一个长度为 n 的随机字符串
+ *
+ * @param [n] {Number}
+ */
+export function rndStr (n) {
+  n = n || 16;
+  var chars = "1234567890abcdefghijklmnopqrstuvwxyz",
+    a = [],
+    i, chars_len = chars.length, r;
+
+  for (i = 0; i < n; i++) {
+    r = Math.floor(Math.random() * chars_len);
+    a.push(chars.substr(r, 1));
+  }
+  return a.join("");
+}
+
+export function pointInRect (point, rect) {
+  return (point.ex != -1 &&
+    point.ey != -1 &&
+    point.ex > rect.x &&
+    point.ex < rect.x2 &&
+    point.ey > rect.y &&
+    point.ey < rect.y2);
+}

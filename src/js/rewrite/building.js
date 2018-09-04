@@ -42,6 +42,8 @@ function lineTo2(ctx, x0, y0, x1, y1, len) {
 }
 
 const renderFunctions = {
+
+  // 加农炮
   "cannon": function (b, ctx, gs, gs2) {
     var target_position = b.getTargetPosition();
 
@@ -153,6 +155,8 @@ const renderFunctions = {
     ctx.fill();
 
   },
+
+  // 墙
   "wall": function (b, ctx, gs, gs2) {
     ctx.lineWidth = 1;
     ctx.fillStyle = "#666";
@@ -171,6 +175,8 @@ const renderFunctions = {
     ctx.closePath();
     ctx.stroke();
   },
+
+  // 激光枪
   "laser_gun": function (b, ctx/*, gs, gs2*/) {
 //			var target_position = b.getTargetPosition();
 
