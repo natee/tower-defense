@@ -1,7 +1,9 @@
+import {log, rndStr} from './utils/utils'
 import Tile from "./tile";
 
 class Grid {
-  constructor(config, gridSize){
+  constructor(game, config, gridSize){
+    this.game = game
     this.row = config.row
     this.col = config.col
     this.gridSize = gridSize
@@ -22,7 +24,8 @@ class Grid {
     for (let i = 0; i < this.row; i++) {
       let row = cells[i] = []
       for (let j = 0; j < this.col; j++) {
-        row.push(new Tile({row: i, col: j}, 0, this.gridSize))
+        // row.push(null)
+        row.push(new Tile(this.game, {row: i, col: j}, 0, this.gridSize))
       }
     }
 
@@ -30,6 +33,9 @@ class Grid {
   }
 
   insertTile(tile){
+    const oldTile = this.cells[tile.row][tile.col]
+    log('old tile:', oldTile)
+    oldTile.destroy()
     this.cells[tile.row][tile.col] = tile;
   }
 

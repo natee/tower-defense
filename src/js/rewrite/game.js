@@ -5,7 +5,6 @@ import Tile from './tile';
 import Building from './building';
 import Popup from './popup';
 import Button from './button';
-import Event from './event';
 
 
 // default config
@@ -33,10 +32,7 @@ class TowerDefense {
     this.canvas = document.querySelector(canvasId)
     this.ctx = this.canvas.getContext('2d')
     this.gridSize = config.gridSize
-    this.currentTile = null
-    this.lastTile = null // 上一次触摸的格子
     this.setup()
-
   }
 
   step(){
@@ -60,7 +56,7 @@ class TowerDefense {
   setup() {
     clearTimeout(this._st)
 
-    this.grid = new Grid(this.config.grid, this.gridSize)
+    this.grid = new Grid(this, this.config.grid, this.gridSize)
 
     this.drawCanvas()
   
@@ -125,34 +121,6 @@ class TowerDefense {
         obj.fn.call(elem, 'out')
       }
     })
-
-    // TODO canvas这么大，怎么可能只找格子，还要做按钮、建筑物的事件判断
-    this.currentTile = this.grid.findTile(x, y)
-
-    if(this.currentTile){
-
-      this.currentTile.onEnter(this.popup)
-
-      if(this.lastTile){
-        const isSameTile = this.lastTile.row === this.currentTile.row
-                          && this.lastTile.col === this.currentTile.col
-        
-        // 鼠标移出上一个格子
-        if(!isSameTile){
-          this.lastTile.onOut(this.popup)
-        }else{
-          return
-        }
-      }
-
-      // log(this.currentTile)
-
-      this.lastTile = this.currentTile
-    }
-    else if(this.lastTile){
-      // 移除格子范围外，隐藏高亮状态
-      this.lastTile.onOut(this.popup)
-    }
   }
 
   getEventXY(e){
@@ -176,8 +144,8 @@ class TowerDefense {
 
     // new Building({row: 0, col: 0,}, 1, this.gridSize)
     // new Building({row: this.grid.row - 1, col: this.grid.col - 1,}, 2, this.gridSize)
-    this.grid.insertTile(new Tile({row: 0, col: 0,}, 1, this.gridSize))
-    this.grid.insertTile(new Tile({row: this.grid.row - 1, col: this.grid.col - 1,}, 2, this.gridSize))
+    this.grid.insertTile(new Tile(this, {row: 0, col: 0,}, 1))
+    this.grid.insertTile(new Tile(this, {row: this.grid.row - 1, col: this.grid.col - 1,}, 2))
 
     // TODO 添加更多建筑
   }

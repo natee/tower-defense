@@ -23,7 +23,10 @@ class Popup {
   }
 
   msg(tile, txt){
-    if(!txt) return
+    if(!txt) {
+      this.hide()
+      return
+    }
 
     this.text = txt
     this.el = tile
@@ -49,7 +52,9 @@ class Popup {
   }
 
   render(){
-    if(!this.isVisible) return
+    if(!this.isVisible){
+      return
+    }
 
     const ctx = this.game.ctx
 

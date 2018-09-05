@@ -22,3 +22,7 @@ html, body {
   box-shadow: 0 0 33px 13px rgb(198, 219, 236);
   padding: 20px;
 }
+
+#td-canvas{
+  cursor: pointer;
+}

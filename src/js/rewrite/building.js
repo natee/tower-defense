@@ -178,7 +178,6 @@ const renderFunctions = {
 
   // 激光枪
   "laser_gun": function (b, ctx/*, gs, gs2*/) {
-//			var target_position = b.getTargetPosition();
 
     ctx.fillStyle = "#f00";
     ctx.strokeStyle = "#000";
@@ -215,7 +214,6 @@ const renderFunctions = {
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(b.cx, b.cy);
-//			b.muzzle = lineTo2(ctx, b.cx, b.cy, target_position[0], target_position[1], gs2);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();

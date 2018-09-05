@@ -11,8 +11,7 @@ class Button{
 
     // 随机生成一个id识别当前对象
     this.id = 'el-' + rndStr()
-    this.x = options.x
-    this.y = options.y
+    this.options = options
     this.setup()
   }
 
@@ -30,6 +29,8 @@ class Button{
       strLen2(this.text) * 6 + 10
     )
     this.height = 20
+    this.x = this.options.x
+    this.y = this.options.y
     this.x2 = this.x + this.width + 2 * 5
     this.y2 = this.y + this.height + 2 * 2
 

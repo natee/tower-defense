@@ -1,4 +1,5 @@
 import { TILE_NAMES } from './utils/constant'
+import {log, rndStr} from './utils/utils'
 
 class Tile {
 
@@ -8,13 +9,21 @@ class Tile {
    * @param {string} type  0: 空白 1: 起点  2: 终点  待补充：建筑  怪物
    * @param {number} gridSize 
    */
-  constructor(position, type, gridSize){
+  constructor(game, position, type){
+    this.game = game
     this.row = position.row
     this.col = position.col
     this.type = type
-    this.gridSize = gridSize || 20
+    this.gridSize = game.gridSize || 20
 
+    // 随机生成一个id识别当前对象
+    this.id = 'el-' + rndStr()
+    this.setup()
+  }
+
+  setup(){
     this.caculatePos()
+    this.bindEvents()
   }
 
   /**
@@ -35,23 +44,49 @@ class Tile {
     this.cy = Math.floor(this.y + gridSize / 2)
   }
 
-  hover(){
+  _onHover(out){
+    if(out){
+      this._onOut()
+      return
+    }
     this.isHover = true
+    this.game.popup.msg(this, TILE_NAMES[this.type])
   }
 
-  out(){
+  _onOut(){
     this.isHover = false
+    // this.game.popup.hide()
   }
 
-  onEnter(popup){
-    this.hover()
+  // 每个元素都要绑一次？烦
+  bindEvents(){
+    const ele = this.id
 
-    popup.msg(this, TILE_NAMES[this.type])
+    let events = this.game._events
+    events['hover'].push({ _id: ele, elem: this, fn: this._onHover})
+    events['out'].push({ _id: ele, elem: this, fn: this._onOut})
   }
 
-  onOut(popup){
-    this.out()
-    popup.hide()
+  // 清除事件
+  destroy(){
+    let events = this.game._events
+    const clickLen = events.click.length
+    const hoverLen = events.hover.length
+    for (let i = 0; i < clickLen; i++) {
+      const el = events.click[i];
+      if(el._id === this.id){
+        events.click.splice(i, 1)
+        break;
+      }
+    }
+
+    for (let i = 0; i < hoverLen; i++) {
+      const el = events.hover[i];
+      if(el._id === this.id){
+        events.hover.splice(i, 1)
+        break;
+      }
+    }
   }
 
 }
